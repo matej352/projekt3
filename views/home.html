@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<style>
+    canvas {
+        border: 1px solid #d3d3d3;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 15px;
+    }
+</style>
+<script>
+    let initalRectCount = getRandomRectCount(5, 10);
+    var clickedRectCount = 0;
+    var elements = [];
+
+    function startGame() {
+
+        for (let i = 0; i < initalRectCount; i++) {
+            elements[i] = new component(50, 50, "red", getRandomPositionX(0,700), getRandomPositionY(0,600), true);
+        }
+
+        myGameArea.start();
+        myGameArea.clickListener();
+
+
+    }
+
+    var myGameArea = {
+        canvas: document.createElement("canvas"),
+        start: function () {
+            this.canvas.id = "myCanvasGame";
+            this.canvas.width = 700;
+            this.canvas.height = 600;
+            this.context = this.canvas.getContext("2d");
+            this.context.beginPath(); //dodo
+
+            
+
+            document.body.insertBefore(this.canvas, document.body.childNodes[0])
+            this.frameNo = 0;
+            this.interval = setInterval(updateGameArea, 20);
+        
+        },
+        stop: function () {
+            clearInterval(this.interval);
+            var congratsText = "Congratulations";
+            var textLength = this.context.measureText(congratsText).width
+            this.context.fillText(congratsText, 350 - (textLength/2) , 300)
+        },
+        clear: function () {
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        },
+        result: function() {
+            this.context.font = "30px Arial"
+            var resultText = "Result: " + clickedRectCount + " out of " + initalRectCount;
+            var textLength = this.context.measureText(resultText).width
+            this.context.fillText(resultText, 700 - textLength - 5, 30)
+        },
+
+        clickListener() {
+            var elem = document.getElementById('myCanvasGame');
+            elem.addEventListener('click', function (event) {
+
+                var elemLeft = elem.offsetLeft + elem.clientLeft;
+                var elemTop = elem.offsetTop + elem.clientTop;
+
+                var clicked_x = event.pageX - elemLeft;
+                var clicked_y = event.pageY - elemTop;
+
+               
+                elements.forEach(function (element) {
+                    if (element.type && (clicked_x > element.x - (element.width / 2) && clicked_x < element.x + (element.width / 2)) &&
+                        (clicked_y > element.y - (element.height / 2) && clicked_y < element.y + (element.height / 2))) {
+                       
+                        element.remove();
+                        clickedRectCount += 1;
+                    }
+                });
+
+            }, false);
+        }
+    }
+
+
+    function component(width, height, color, x, y, type) {
+        this.type = type
+        this.width = width
+        this.height = height
+        this.speed_x = getRectRandomSpeed(1,5);
+        this.speed_y = getRectRandomSpeed(1,5);
+        this.x = x
+        this.y = y
+
+        
+        this.remove = function () {
+            this.type = false;
+        }
+
+        this.update = function () {
+            ctx = myGameArea.context;
+            ctx.save();
+            ctx.translate(this.x, this.y);
+
+            ctx.fillStyle = color
+            ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height)
+            ctx.restore();
+        }
+
+        this.newPos = function () {
+            
+            if (this.x - this.width / 2 < 0) {
+                this.speed_x = getRectRandomSpeed(1,5);
+            }
+            else if ((this.x + this.width / 2) >= myGameArea.context.canvas.width) {
+                this.speed_x = -getRectRandomSpeed(1,5);
+            }
+
+            if (this.y - this.height / 2 < 0) {
+                this.speed_y = -getRectRandomSpeed(1,5)
+            }
+            else if ((this.y + this.height / 2) >= myGameArea.context.canvas.height) {
+                this.speed_y = getRectRandomSpeed(1,5);
+            }
+
+            this.x += this.speed_x
+            this.y -= this.speed_y
+        }
+    }
+
+    function updateGameArea() {
+        myGameArea.clear()
+        myGameArea.result()
+
+        if (initalRectCount == clickedRectCount) {
+            myGameArea.stop();
+        }
+
+        for (let i = 0; i < initalRectCount; i++) {
+            if (elements[i].type) {
+                elements[i].newPos()
+                elements[i].update()
+            }
+
+        }
+
+    }
+
+
+
+
+
+    function getRandomRectCount(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min) + min);
+    }
+
+    function getRandomPositionX(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min) + min);
+    }
+
+    function getRandomPositionY(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min) + min);
+    }
+
+    function getRectRandomSpeed(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    function changeRectSpeed(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+
+
+
+
+
+</script>
+
+<body onload="startGame()">
+
+
+
+
+</body>
+
+</html>
